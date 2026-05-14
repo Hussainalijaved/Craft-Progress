@@ -157,16 +157,42 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 // ========== CONTACT FORM ==========
 const contactForm = document.getElementById('contactForm');
 if (contactForm) {
-  contactForm.addEventListener('submit', (e) => {
+  contactForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = contactForm.querySelector('button[type="submit"]');
     const originalText = btn.textContent;
-    btn.textContent = '✓ Message Sent!';
-    btn.style.background = 'linear-gradient(135deg, #00c853, #4a7cff)';
+    
+    // Form data
+    const formData = new FormData(contactForm);
+    
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    try {
+      const response = await fetch(contactForm.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        btn.textContent = '✓ Message Sent!';
+        btn.style.background = 'linear-gradient(135deg, #00c853, #4a7cff)';
+        contactForm.reset();
+      } else {
+        throw new Error('Form submission failed');
+      }
+    } catch (error) {
+      btn.textContent = '❌ Error, try again';
+      btn.style.background = '#ff4a4a';
+    }
+
     setTimeout(() => {
+      btn.disabled = false;
       btn.textContent = originalText;
       btn.style.background = '';
-      contactForm.reset();
     }, 3000);
   });
 }
